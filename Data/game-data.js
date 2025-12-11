@@ -396,7 +396,7 @@ const GAMES_DATA = [
         nombre: 'GTA Vice City Mod Remaster',
         appid: '12110', 
         portada_card: 'image/gtavc.png', // Placeholder
-        portada_miniatura: 'image/gta_vc_r.png',
+        portada_miniatura: 'image/gtavc.png',
         peso: '1.7GB', 
         peso_mb: 1700, 
         lanzamiento: '27 de octubre de 2002', 
@@ -428,7 +428,7 @@ const GAMES_DATA = [
         nombre: 'GTA San Andreas',
         appid: '12120', 
         portada_card: 'image/gtasa2.png', // Placeholder
-        portada_miniatura: 'image/gta_sa.png',
+        portada_miniatura: 'image/gtasa2.png',
         peso: '2.7 GB', 
         peso_mb: 2700, 
         lanzamiento: '26 de octubre de 2004', 
@@ -454,4 +454,5 @@ const GAMES_DATA = [
         }
     }
 ];
+
 
