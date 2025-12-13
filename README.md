@@ -25,9 +25,10 @@ Este proyecto es mantenido por un equipo con roles específicos:
 
 ## 🛠️ ¿Problemas o Sugerencias?
 
-Agradecemos cualquier informe de errores o sugerencia para mejorar la experiencia web:
+Agradecemos cualquier informe de errores, sugerencia o nueva contribución para mejorar la experiencia web. Puedes reportar todo en nuestra sección de [Issues](https://github.com/RealMasterGames/RealMasterGames.github.io/issues).
 
 * **Enlaces Rotos:** Si encuentras un enlace de descarga caído, por favor, crea un **Issue** en este repositorio.
 * **Errores en la Web:** Para fallos en la interfaz o la funcionalidad (filtros, tarjetas), crea un **Issue** para que el Administrador de la Web pueda revisarlo.
-* **Tu juego!!:** Tambien puedes subir tu juego favorito a mediafire o drive, y claro, revisa primero si ya esta en el catalogo, si no esta subelo y deja lo en **Issue** para que el Administrador de la web pueda subirlo dejando sus respectivos creditos al Uploader!! (tu🤝)
+* **¡Sube tu Juego Favorito! (Colaboración Uploader):** Revisa si el juego que quieres compartir ya está en el catálogo. Si no lo está, súbelo a MediaFire o Drive y deja el enlace y el nombre del juego en un **Issue**. El Administrador de la Web lo revisará, lo integrará al catálogo, **¡dándote los respectivos créditos como Uploader!**
+
 ¡Gracias por visitar RealMasterGames!
