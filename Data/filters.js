@@ -47,6 +47,17 @@ function normalizeString(str) {
 }
 
 /**
+ * Algoritmo de Fisher-Yates para mezclar arrays (aleatoriedad).
+ * @param {Array} array El array a mezclar.
+ */
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+/**
  * Extrae todas las opciones de filtro únicas de GAMES_DATA.
  */
 function extractFilterOptions() {
@@ -128,19 +139,29 @@ function updateFilterGroupDisplays() {
         modeFiltersContainer.appendChild(filterDiv);
     });
 
-    // 5. Popularidad (Metacritic > 85, > 70)
+    // 5. Popularidad (Metacritic) 
     popularityFiltersContainer.innerHTML = `
-        <div class="filter-option" data-filter="90">90+</div>
-        <div class="filter-option" data-filter="85">85+</div>
-        <div class="filter-option" data-filter="80">80+</div>
-        <div class="filter-option" data-filter="70">70+</div>
+        <div class="filter-option" data-filter=">90">+90</div>
+        <div class="filter-option" data-filter="90-80">90-80</div>
+        <div class="filter-option" data-filter="80-70">80-70</div>
+        <div class="filter-option" data-filter="<70">-70</div>
     `;
     
-    // 6. Peso (TAMAÑO)
+    // 6. Peso (TAMAÑO🥵) - USANDO LA LISTA ACTUALIZADA DEL USUARIO
     sizeFiltersContainer.innerHTML = `
-        <div class="filter-option" data-filter="<5000">Menos de 5 GB</div>
-        <div class="filter-option" data-filter="5000-15000">5 GB - 15 GB</div>
-        <div class="filter-option" data-filter=">15000">Más de 15 GB</div>
+        <div class="filter-option" data-filter="<1000">0-1 GB</div>
+        <div class="filter-option" data-filter="1000-5000">1-5 GB</div>
+        <div class="filter-option" data-filter="5000-10000">5-10 GB</div>
+        <div class="filter-option" data-filter="10000-20000">10-20 GB</div>
+        <div class="filter-option" data-filter="20000-30000">20-30 GB</div>
+        <div class="filter-option" data-filter="30000-40000">30-40 GB</div>
+        <div class="filter-option" data-filter="40000-50000">40-50 GB</div>
+        <div class="filter-option" data-filter="50000-60000">50-60 GB</div>
+        <div class="filter-option" data-filter="60000-70000">60-70 GB</div>
+        <div class="filter-option" data-filter="70000-80000">70-80 GB</div>
+        <div class="filter-option" data-filter="80000-90000">80-90 GB</div>
+        <div class="filter-option" data-filter="90000-100000">90-100GB</div>
+        <div class="filter-option" data-filter=">100000">100GB+</div>
     `;
 
     // Reasigna todos los event listeners
@@ -148,12 +169,15 @@ function updateFilterGroupDisplays() {
 }
 
 
-// --- LÓGICA DE FILTRADO Y VISUALIZACIÓN ---
+// --- LÓGICA DE FILTRADO Y VISUALIZACIÓN xd---
 
 function generateGameCards() {
     gamesGrid.innerHTML = '';
     const cards = [];
     
+    // APLICAR ALEATORIEDAD ANTES DE CREAR LAS TARJETAS
+    shuffleArray(GAMES_DATA);
+
     GAMES_DATA.forEach(game => {
         const card = document.createElement('a');
         card.className = 'game-card';
@@ -285,27 +309,47 @@ function applyFilters() {
             isVisible = false;
         }
         
-        // 8. Filtro de Popularidad (Metacritic)
+        // 8. Filtro de Popularidad (Metacritic) - LÓGICA DE RANGO
         if (isVisible && activeFilters.popularity) {
-            const minScore = parseInt(activeFilters.popularity, 10);
-            if (metacritic < minScore) {
+            const filter = activeFilters.popularity;
+            let scorePass = false;
+
+            if (filter.startsWith('>')) { // e.g., >90
+                const min = parseInt(filter.substring(1), 10);
+                if (metacritic > min) scorePass = true;
+            } else if (filter.startsWith('<')) { // e.g., <70
+                const max = parseInt(filter.substring(1), 10);
+                if (metacritic < max) scorePass = true;
+            } else if (filter.includes('-')) { // e.g., 90-80 (Max-Min para Metacritic)
+                const [maxStr, minStr] = filter.split('-');
+                const min = parseInt(minStr, 10);
+                const max = parseInt(maxStr, 10);
+                if (metacritic >= min && metacritic <= max) scorePass = true;
+            }
+
+            if (!scorePass) {
                 isVisible = false;
             }
         }
         
-        // 9. Filtro de Tamaño (Peso)
+        // 9. Filtro de Tamaño (Peso) - LÓGICA DE RANGO
         if (isVisible && activeFilters.size) {
-            const sizeFilter = activeFilters.size;
+            const filter = activeFilters.size;
             let sizePass = false;
-
-            if (sizeFilter === '<5000' && size < 5000) {
-                sizePass = true;
-            } else if (sizeFilter === '>15000' && size > 15000) {
-                sizePass = true;
-            } else if (sizeFilter === '5000-15000' && size >= 5000 && size <= 15000) {
-                sizePass = true;
-            }
             
+            if (filter.startsWith('<')) { // e.g., <1000
+                const max = parseInt(filter.substring(1), 10);
+                if (size < max) sizePass = true;
+            } else if (filter.startsWith('>')) { // e.g., >100000 (ajustado al nuevo límite)
+                const min = parseInt(filter.substring(1), 10);
+                if (size > min) sizePass = true;
+            } else if (filter.includes('-')) { // e.g., 1000-5000 (Min-Max para tamaño)
+                const [minStr, maxStr] = filter.split('-');
+                const min = parseInt(minStr, 10);
+                const max = parseInt(maxStr, 10);
+                if (size >= min && size <= max) sizePass = true;
+            }
+
             if (!sizePass) {
                 isVisible = false;
             }
@@ -415,7 +459,7 @@ clearFiltersBtn.addEventListener('click', () => {
 function initializeFilters() {
     extractFilterOptions(); 
     updateFilterGroupDisplays(); 
-    generateGameCards(); 
+    generateGameCards(); // Genera y mezcla los juegos
     generateAlphabetFilters(); 
 }
 

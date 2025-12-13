@@ -37,23 +37,41 @@
             padding: 0 20px; 
         }
         
+        /* BOTÓN VOLVER AL CATÁLOGO (ESTILO BURBUJA) */
         a.back-button {
-            display: inline-block; margin: 20px 0; color: var(--text-secondary); 
-            text-decoration: none; font-weight: normal; transition: color 0.2s;
+            display: inline-block; 
+            margin: 20px 0; 
+            /* Estilo Burbuja */
+            background-color: var(--bg-secondary); 
+            padding: 10px 15px;
+            border-radius: var(--card-radius); 
+            color: var(--text-primary); /* Texto visible */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); /* Sombra suave */
+            /* Estilos de Enlace */
+            text-decoration: none; 
+            font-weight: 700; 
+            transition: all 0.2s;
         }
-        a.back-button:hover { color: var(--accent-color); }
+        a.back-button:hover { 
+            color: var(--accent-color); 
+            background-color: var(--bg-tertiary);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.5); /* Sombra acentuada en hover */
+        }
 
         /* --- 1. BANNER SUPERIOR --- */
-        .game-banner-container {
-            position: relative; height: 350px; overflow: hidden;
+        .game-banner-container { /*height: 450px; */ 
+            position: relative; height: 450px; overflow: hidden;
         }
         .banner-bg {
-            width: 100%; height: 100%; object-fit: cover; position: absolute;
-            filter: brightness(0.4) blur(5px); transform: scale(1.05);
+            width: 100%; height: 110%; object-fit: cover; position: absolute;
+            filter: brightness(1) blur(0px); transform: scale(1.05);
         }
+        
+        /* DIFUMINADO DEL BANNER (REINTRODUCIDO) */
         .banner-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to top, var(--bg-main) 0%, rgba(10, 14, 23, 0.4) 60%, rgba(10, 14, 23, 0.6) 100%);
+            /* Gradiente de transparente arriba a color de fondo principal (var(--bg-main)) abajo */
+            background: linear-gradient(to top, var(--bg-main) 0%, rgba(10, 14, 23, 0.0) 50%);
         }
 
         /* --- 2. TARJETA PRINCIPAL (FLOTANTE) - ESTRUCTURA DE PERFIL --- */
@@ -268,11 +286,12 @@
             font-weight: 700;
         }
         .install-steps {
-            white-space: pre-wrap; /* Mantiene saltos de línea y espacios */
+            /* Se mantiene white-space: pre-wrap para estilos, pero el JS usará <br> */
             background-color: var(--bg-tertiary);
             padding: 10px;
             border-radius: 4px;
-            font-family: monospace;
+            font-family: sans-serif; /* Usamos sans-serif para texto normal, no monospace */
+            line-height: 1.5;
             font-size: 0.9rem;
             overflow-x: auto;
         }
@@ -285,6 +304,19 @@
         .req-spec { line-height: 1.6; font-size: 0.95rem; margin-bottom: 8px; }
         /* MODIFICACIÓN DE ESTILO: Empuja el valor de requisito a la derecha */
         .req-spec b { color: var(--text-secondary); display: inline-block; width: 150px; } 
+
+        /* --- 4. FOOTER FADE OUT (Difuminado al final de la página) --- */
+        .content-fade-out {
+            width: 100%;
+            height: 100px; 
+            /* Gradiente de transparente a color de fondo principal */
+            background: linear-gradient(to top, var(--bg-main) 0%, rgba(10, 14, 23, 0) 100%); 
+            /* Aplica un desplazamiento negativo para superponer el último contenido */
+            margin-top: -40px; 
+            position: relative; 
+            z-index: 5; 
+            pointer-events: none; /* Permite hacer clic a través de él */
+        }
 
 
         /* Responsive */
@@ -334,7 +366,7 @@
                             <span class="info-label">Plataforma:</span>
                             <span class="info-value">PC</span>
                         </div>
-                         <div class="detail-item">
+                       <div class="detail-item">
                             <span class="info-label">Peso:</span>
                             <span class="info-value" id="gamePeso"></span>
                         </div>
@@ -350,8 +382,7 @@
                         </div>
                         <div class="detail-item">
                             <span class="info-label">Subido por:</span>
-                            <span class="info-value">Raxxor</span> 
-                        </div>
+                            <span class="info-value" id="gameUploader"></span> </div>
                     </div>
                     
                     <p id="briefDescription">...</p>
@@ -400,7 +431,7 @@
                     </div>
                     <div class="config-item">
                         <span class="config-label">Instrucciones de Instalación:</span>
-                        <pre class="config-value install-steps" id="gameInstallation">No hay instrucciones específicas.</pre>
+                        <div class="config-value install-steps" id="gameInstallation">No hay instrucciones específicas.</div>
                     </div>
                 </div>
             </section>
@@ -425,157 +456,161 @@
             
         </section>
         
+        <div class="content-fade-out"></div>
+        
         <a href="index.html" class="back-button">← Volver al Catálogo</a>
     </div>
 
     <script src="Data/game-data.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            window.scrollTo(0, 0); 
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const gameId = urlParams.get('id');
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const params = new URLSearchParams(window.location.search);
+                const gameId = params.get('id');
 
-            // --- 1. Verificación y Carga de Datos ---
-            if (!gameId || typeof GAMES_DATA === 'undefined') {
-                document.getElementById('gameName').textContent = 'Error: ID o datos no disponibles.';
-                return;
-            }
-
-            const game = GAMES_DATA.find(g => g.id === gameId);
-
-            if (!game) {
-                document.getElementById('gameName').textContent = 'Error: Juego no encontrado.';
-                return;
-            }
-
-            // --- 2. Rellenar Header y Banner ---
-            document.getElementById('detailTitle').textContent = `RM Games | ${game.nombre}`;
-            document.getElementById('headerBgImage').src = game.portada_card || 'placeholder.jpg';
-            document.getElementById('gameCover').src = game.portada_miniatura || 'placeholder.jpg';
-            document.getElementById('gameName').textContent = game.nombre;
-
-            // --- 3. Botones de Acción (Dejados para compatibilidad, pero ocultos por CSS) ---
-            // Si en el futuro se quiere un link de descarga principal, se puede usar esta lógica:
-            const downloadButton = document.getElementById('downloadButton');
-            if (downloadButton && game.links_descarga && game.links_descarga[0]) {
-                 downloadButton.onclick = () => { window.location.href = game.links_descarga[0].url; };
-            }
-            
-            const trailerButton = document.getElementById('trailerButton');
-            if (trailerButton) {
-                trailerButton.onclick = () => { window.open(game.link_trailer || '#', '_blank'); };
-            }
-
-
-            // --- 4. Detalles en Línea (Plataforma, Peso, Valoraciones, Raxxor) ---
-            document.getElementById('gamePeso').textContent = game.peso || 'N/A';
-            document.getElementById('gameSteamRating').textContent = 'N/A Estrellas SteamDB'; 
-
-            const score = game.valoracion_metacritic;
-            const scoreBox = document.getElementById('gameMetacritic');
-            
-            scoreBox.textContent = score || 'N/A';
-            scoreBox.className = 'metacritic-score-box'; 
-
-            if (score === 'N/A' || !score) {
-                scoreBox.classList.add('na');
-            } else {
-                const numScore = parseInt(score);
-                
-                if (numScore >= 95) {
-                    scoreBox.classList.add('gold');
-                } else if (numScore >= 75) {
-                    scoreBox.classList.add('high');
-                } else if (numScore >= 50) {
-                    scoreBox.classList.add('mid');
-                } else if (numScore >= 0) {
-                    scoreBox.classList.add('low');
-                } else {
-                    scoreBox.classList.add('na');
+                if (!gameId) {
+                    document.getElementById('detailTitle').textContent = 'Error';
+                    return;
                 }
-            }
 
-            // --- 5. Breve Descripción (Limitada) ---
-            const fullDesc = game.descripcion || 'No hay descripción disponible.';
-            const sentences = fullDesc.match(/[^.!?]+[.!?]/g) || [fullDesc];
-            let briefDesc = sentences.slice(0, 3).join('').trim();
-            if (briefDesc.length < 50 && fullDesc.length > 50) {
-                briefDesc = fullDesc.substring(0, Math.min(fullDesc.length, 150)) + (fullDesc.length > 150 ? '...' : '');
-            } else if (briefDesc.length === 0) {
-                 briefDesc = fullDesc;
-            }
-            document.getElementById('briefDescription').textContent = briefDesc;
-            
-            // --- 6. Sección de Detalles de Lanzamiento ---
-            document.getElementById('gameGenerosList').textContent = game.genero || 'N/A';
-            document.getElementById('gameReleaseDate').textContent = game.lanzamiento || 'N/A';
-            document.getElementById('gamePublisherDetails').textContent = game.publisher || 'N/A';
-            document.getElementById('supportPublisherName').textContent = game.publisher || 'N/A';
+                // Busca el juego en los datos (asumiendo que GAMES_DATA está disponible)
+                const game = GAMES_DATA.find(g => g.id === gameId);
+
+                if (!game) {
+                    document.getElementById('detailTitle').textContent = 'Error';
+                    return;
+                }
+
+                // ----------------------------------------------------------------
+                // --- INSERCIÓN DE DATOS ---
+                // ----------------------------------------------------------------
+
+                // Título y Banner
+                document.getElementById('detailTitle').textContent = game.nombre + ' - Detalle';
+                document.getElementById('gameName').textContent = game.nombre; 
+
+                // Lógica de Banner y Portadas
+                const bannerUrl = game.banner || game.portada_miniatura;
+                document.getElementById('headerBgImage').src = bannerUrl;
+                document.getElementById('gameCover').src = game.portada_card;
+                document.getElementById('gameCover').alt = `Portada de ${game.nombre}`;
+
+                // --- MANEJO DE DESCRIPCIONES (LÓGICA DE CORTE A 150 CARACTERES) ---
+                const rawDescription = game.descripcion || 'Descripción no disponible.';
+                const maxLength = 150;
+
+                // Reemplazamos todos los saltos de línea con un espacio simple para un conteo de caracteres continuo
+                let cleanDescription = rawDescription.replace(/\n/g, ' ').trim(); 
+                let briefDescriptionFormatted;
+
+                if (cleanDescription.length > maxLength) {
+                    // 1. Tomar los primeros 150 caracteres
+                    let truncatedText = cleanDescription.substring(0, maxLength);
+                    
+                    // 2. Evitar cortar una palabra a mitad: Encuentra el último espacio antes del límite
+                    const lastSpace = truncatedText.lastIndexOf(' ');
+                    
+                    if (lastSpace > 0) {
+                        // Cortar en el último espacio y agregar '...'
+                        briefDescriptionFormatted = truncatedText.substring(0, lastSpace).trim() + '...';
+                    } else {
+                        // Si no hay espacios en los primeros 150 caracteres (palabra muy larga), simplemente cortar y agregar '...'
+                        briefDescriptionFormatted = truncatedText.trim() + '...';
+                    }
+                } else {
+                    // Si es igual o más corto, usar el texto limpio (sin saltos de línea, como un solo párrafo)
+                    briefDescriptionFormatted = cleanDescription;
+                }
+                
+                // 1. Inserción en Descripción Breve
+                document.getElementById('briefDescription').innerHTML = briefDescriptionFormatted;
+
+                // 2. Descripción Completa: Texto completo con <br> para saltos de línea
+                const formattedFullDescription = rawDescription.replace(/\n/g, '<br>');
+                document.getElementById('gameReview').innerHTML = formattedFullDescription;
+                
+                // Metacritic y Rating Logic
+                document.getElementById('gameMetacritic').textContent = game.valoracion_metacritic || 'N/A';
+                const scoreElement = document.getElementById('gameMetacritic');
+                const score = parseInt(game.valoracion_metacritic);
+                scoreElement.classList.remove('high', 'mid', 'low', 'na', 'gold');
+                if (!isNaN(score)) {
+                    if (score >= 90) scoreElement.classList.add('gold');
+                    else if (score >= 75) scoreElement.classList.add('high');
+                    else if (score >= 50) scoreElement.classList.add('mid');
+                    else scoreElement.classList.add('low');
+                } else {
+                    scoreElement.classList.add('na');
+                }
+
+                // Metadatos (Detalles de lanzamiento)
+                document.getElementById('gamePeso').textContent = game.peso || 'N/A';
+                document.getElementById('gameGenerosList').textContent = game.genero || 'N/A';
+                document.getElementById('gameReleaseDate').textContent = game.lanzamiento || 'N/A';
+                document.getElementById('gamePublisherDetails').textContent = game.publisher || 'N/A';
+                document.getElementById('supportPublisherName').textContent = game.publisher || 'the developers';
+                
+                // CORRECCIÓN SOLICITADA: Cargar el nombre del uploader desde la data del juego
+                document.getElementById('gameUploader').textContent = game.uploader || 'N/A';
+                
+                // Links de Descarga
+                const linksContainer = document.getElementById('gameLinks');
+                linksContainer.innerHTML = ''; 
+                
+                if (game.links_descarga && game.links_descarga.length > 0) {
+                    game.links_descarga.forEach(link => {
+                        const anchor = document.createElement('a');
+                        anchor.href = link.url;
+                        anchor.textContent = link.parte;
+                        anchor.target = '_blank';
+                        anchor.classList.add('download-link-btn');
+                        if(link.parte && (link.parte.toLowerCase().includes('parte') || link.parte.toLowerCase().includes('part'))) {
+                            anchor.classList.add('part-link');
+                        }
+                        linksContainer.appendChild(anchor);
+                    });
+                } else {
+                    linksContainer.innerHTML = '<span style="color:var(--danger-color); font-size: 1rem;">Links de descarga no disponibles.</span>';
+                }
+                
+                // Contraseña e Instalación
+                document.getElementById('gamePassword').textContent = game.password || 'N/A';
+                
+                // CORRECCIÓN PARA INSTRUCCIONES DE INSTALACIÓN Y SALTO DE LÍNEA
+                const rawInstalacion = game.instalacion || 'Instrucciones no especificadas.';
+                document.getElementById('gameInstallation').innerHTML = rawInstalacion.replace(/\n/g, '<br>');
 
 
-            // --- 7. Contenido Principal (Flujo Único) ---
-            
-            // Sección "Acerca del Juego" (Muestra la descripción completa)
-            document.getElementById('gameReview').textContent = fullDesc;
+                // Requisitos del Sistema
+                if (game.requisitos) {
+                    document.getElementById('reqOS').textContent = game.requisitos.os || 'N/A';
+                    document.getElementById('reqCPU').textContent = game.requisitos.procesador || 'N/A';
+                    document.getElementById('reqRAM').textContent = game.requisitos.memoria || 'N/A';
+                    document.getElementById('reqGPU').textContent = game.requisitos.graficos || 'N/A';
+                    document.getElementById('reqAlmacenamiento').textContent = game.requisitos.almacenamiento || 'N/A';
+                } else {
+                    document.getElementById('gameRequisitos').innerHTML = '<p style="color:var(--text-secondary);">Requisitos no especificados.</p>';
+                }
 
-            // Lógica de Descargas y Configuración (NUEVA)
-            const linksContainer = document.getElementById('gameLinks');
-            linksContainer.innerHTML = ''; 
-            
-            if (game.links_descarga && game.links_descarga.length > 0) {
-                game.links_descarga.forEach(link => {
-                    const linkElement = document.createElement('a');
-                    linkElement.href = link.url;
-                    linkElement.target = '_blank';
-                    linkElement.className = (game.links_descarga.length > 1) ? 'download-link-btn part-link' : 'download-link-btn';
-                    linkElement.textContent = `⬇️ ${link.parte}`;
-                    linksContainer.appendChild(linkElement);
-                });
-            } else {
-                linksContainer.innerHTML = '<p style="color:var(--text-secondary);">No hay enlaces de descarga disponibles.</p>';
-            }
-
-            // Rellenar Contraseña e Instalación
-            document.getElementById('gamePassword').textContent = game.password || 'N/A';
-            document.getElementById('gameInstallation').textContent = game.instalacion || 'No hay instrucciones específicas.';
-
-
-            // Requisitos del PC
-            if (game.requisitos) {
-                document.getElementById('reqOS').textContent = game.requisitos.os || 'N/A';
-                document.getElementById('reqCPU').textContent = game.requisitos.procesador || 'N/A';
-                document.getElementById('reqRAM').textContent = game.requisitos.memoria || 'N/A';
-                document.getElementById('reqGPU').textContent = game.requisitos.graficos || 'N/A';
-                // Campos Adicionales
-                document.getElementById('reqAlmacenamiento').textContent = game.requisitos.almacenamiento || 'N/A';
-                // ELIMINADO: document.getElementById('reqDirectX').textContent = game.requisitos.directx || 'N/A';
-            } else {
-                document.getElementById('gameRequisitos').innerHTML = '<p style="color:var(--text-secondary);">Requisitos no especificados.</p>';
-            }
-
-            // Capturas de Pantalla
-            const screenshotsContainer = document.getElementById('screenshots');
-            screenshotsContainer.innerHTML = ''; 
-            
-            if (game.capturas && game.capturas.length > 0) {
-                game.capturas.forEach(url => {
+                // Capturas de Pantalla
+                const screenshotsContainer = document.getElementById('screenshots');
+                screenshotsContainer.innerHTML = ''; 
+                
+                if (game.capturas && game.capturas.length > 0) {
+                    game.capturas.forEach(url => {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = `Captura de ${game.nombre}`;
+                        screenshotsContainer.appendChild(img);
+                    });
+                } else {
                     const img = document.createElement('img');
-                    img.src = url;
-                    img.alt = `Captura de ${game.nombre}`;
+                    img.src = game.portada_miniatura;
+                    img.alt = `Portada de ${game.nombre}`;
+                    img.style.minWidth = '100%'; 
                     screenshotsContainer.appendChild(img);
-                });
-            } else {
-                const img = document.createElement('img');
-                img.src = game.portada_miniatura;
-                img.alt = `Portada de ${game.nombre}`;
-                img.style.minWidth = '100%'; 
-                screenshotsContainer.appendChild(img);
-                document.getElementById('noScreenshots').style.display = 'block';
-            }
-        });
-    </script>
+                    document.getElementById('noScreenshots').style.display = 'block';
+                }
+            });
+        </script>
 </body>
 </html>
