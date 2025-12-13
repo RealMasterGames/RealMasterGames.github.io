@@ -20,7 +20,7 @@ Este proyecto es mantenido por un equipo con roles específicos:
 
 | Rol | Responsable | Tarea Principal |
 | :--- | :--- | :--- |
-| **🕹️ Gestor de Contenido (Uploader)** | **Raxxor** | Se encarga de **conseguir, empaquetar, subir** los archivos de los juegos (en formato ZIP/RAR portable) a plataformas de alojamiento y proporcionar los enlaces de descarga. |
+| **🕹️ Gestor de Contenido principal (Uploader)** | **Raxxor** | Se encarga de **conseguir, empaquetar, subir** los archivos de los juegos (en formato ZIP/RAR portable) a plataformas de alojamiento y proporcionar los enlaces de descarga. |
 | **💻 Administrador de la Web** | **あLG** | Mantiene el código base (HTML, CSS, JavaScript), gestiona los archivos del repositorio, actualiza la lista de juegos en `game-data.js` y asegura el correcto funcionamiento de la interfaz. |
 
 ## 📁 Estructura del Repositorio
